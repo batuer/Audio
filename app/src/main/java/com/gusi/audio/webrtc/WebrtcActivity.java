@@ -1,18 +1,24 @@
-package com.gusi.audio;
+package com.gusi.audio.webrtc;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Process;
 import android.system.Os;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.gusi.audio.AudioEffectEntity;
+import com.gusi.audio.R;
+import com.gusi.audio.speex.SpeexActivity;
 import com.gusi.audio.utils.PCM;
 import com.gusi.audio.utils.ToastUtils;
 
@@ -20,23 +26,21 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity {
+public class WebrtcActivity extends Activity {
 
-    private TextView mTvPcm, mTvStatus;
+    private TextView mTvPcm;
     private EditText mEtWeight;
     private CheckBox mCbAgcNs, mCbPlayByte, mCbRecordByte, mCbSystem, mCbAudioEffect;
-    private Audio2 mAudio2;
+    private WebrtcAudio mWebrtcAudio;
     private List<File> mFileList;
     private File mMixFile;
-
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_webrtc);
         mTvPcm = (TextView) findViewById(R.id.tv_pcm);
-        mTvStatus = (TextView) findViewById(R.id.tv_status);
         mEtWeight = (EditText) findViewById(R.id.et_weight);
         mCbAgcNs = (CheckBox) findViewById(R.id.cb_agc_ns);
         mCbPlayByte = (CheckBox) findViewById(R.id.cb_play_byte);
@@ -44,7 +48,7 @@ public class MainActivity extends Activity {
         mCbSystem = (CheckBox) findViewById(R.id.cb_system);
         mCbAudioEffect = (CheckBox) findViewById(R.id.cb_effect);
 
-        mAudio2 = new Audio2(this);
+        mWebrtcAudio = new WebrtcAudio();
         mFileList = new ArrayList<>();
         //
         if (PackageManager.PERMISSION_GRANTED != checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, Process.myPid(), Os.getuid())) {
@@ -53,14 +57,27 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void changeStatus(final String msg) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mTvStatus.setText(msg);
-            }
-        });
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //添加菜单项(组ID,当前选项ID,排序，标题)
+        menu.add(0, 100, 1, "Speex");
+        return super.onCreateOptionsMenu(menu);
     }
+
+    //菜单选项的单击事件处理方法
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case 100:
+                startActivity(new Intent(this, SpeexActivity.class));
+                break;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
     public void clear(View view) {
         mFileList.clear();
@@ -76,27 +93,29 @@ public class MainActivity extends Activity {
 
     public void startPlay(View view) {
         int audioSource = mCbSystem.isChecked() ? MediaRecorder.AudioSource.REMOTE_SUBMIX : MediaRecorder.AudioSource.MIC;
+        boolean aec = mCbAudioEffect.isChecked();
         if (mCbRecordByte.isChecked()) {
-            mAudio2.recordAndPlayByte(audioSource, new AudioEffectEntity(mCbAudioEffect.isChecked()));
+            mWebrtcAudio.recordAndPlayByte(audioSource, new AudioEffectEntity(aec, aec));
         } else {
-            mAudio2.recordAndPlayShort(audioSource, new AudioEffectEntity(mCbAudioEffect.isChecked()));
+            mWebrtcAudio.recordAndPlayShort(audioSource, new AudioEffectEntity(aec, aec));
         }
     }
 
     public void record(View view) {
         int audioSource = mCbSystem.isChecked() ? MediaRecorder.AudioSource.REMOTE_SUBMIX : MediaRecorder.AudioSource.MIC;
+        boolean aec = mCbAudioEffect.isChecked();
         if (mCbRecordByte.isChecked()) {
-            mAudio2.recordByte(audioSource, new AudioEffectEntity(mCbAudioEffect.isChecked()));
+            mWebrtcAudio.recordByte(audioSource, new AudioEffectEntity(aec, aec));
         } else {
-            mAudio2.recordShort(audioSource, new AudioEffectEntity(mCbAudioEffect.isChecked()));
+            mWebrtcAudio.recordShort(audioSource, new AudioEffectEntity(aec, aec));
         }
 //        WebRtcAudioRecord webRtcAudioRecord = new WebRtcAudioRecord
     }
 
     public void stopRecord(View view) {
-        mAudio2.stopRecord();
+        mWebrtcAudio.stopRecord();
         //
-        final File recordFile = mAudio2.getAudioRecordFile();
+        final File recordFile = mWebrtcAudio.getAudioRecordFile();
         if (recordFile != null) {
             mFileList.add(recordFile);
             StringBuilder sb = new StringBuilder();
@@ -112,20 +131,20 @@ public class MainActivity extends Activity {
     }
 
     public void play(View view) {
-        File recordFile = mAudio2.getAudioRecordFile();
+        File recordFile = mWebrtcAudio.getAudioRecordFile();
         if (recordFile == null) {
             ToastUtils.showShort("RecordFile: " + recordFile);
         } else {
             if (mCbPlayByte.isChecked()) {
-                mAudio2.playByte(recordFile, mCbAgcNs.isChecked());
+                mWebrtcAudio.playByte(recordFile, mCbAgcNs.isChecked());
             } else {
-                mAudio2.playShort(recordFile);
+                mWebrtcAudio.playShort(recordFile);
             }
         }
     }
 
     public void stopPlay(View view) {
-        mAudio2.stopPlay();
+        mWebrtcAudio.stopPlay();
     }
 
     public void mix(View view) {
@@ -160,9 +179,9 @@ public class MainActivity extends Activity {
             return;
         }
         if (mCbPlayByte.isChecked()) {
-            mAudio2.playByte(mMixFile, mCbAgcNs.isChecked());
+            mWebrtcAudio.playByte(mMixFile, mCbAgcNs.isChecked());
         } else {
-            mAudio2.playShort(mMixFile);
+            mWebrtcAudio.playShort(mMixFile);
         }
     }
 }

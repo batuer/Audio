@@ -10,12 +10,12 @@ import android.util.Log;
 public class AudioEffectEntity {
     public AcousticEchoCanceler mAcousticEchoCanceler;
     public NoiseSuppressor mNoiseSuppressor;
-    public boolean mIsAcousticEchoCanceler = true;
-    public boolean mIsNoiseSuppressor = true;
+    public boolean mIsAcousticEchoCanceler ;
+    public boolean mIsNoiseSuppressor ;
 
-    public AudioEffectEntity(boolean b) {
-        mIsAcousticEchoCanceler = b;
-        mIsNoiseSuppressor = b;
+    public AudioEffectEntity(boolean aec,boolean ns) {
+        mIsAcousticEchoCanceler = aec;
+        mIsNoiseSuppressor = ns;
     }
 
 

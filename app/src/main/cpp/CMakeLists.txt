@@ -17,7 +17,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         #提供的c++文件
-        speech_NS.cpp
+        webrtc.cpp
         webrtc_ns/complex_bit_reverse.c
         webrtc_ns/complex_fft.c
         webrtc_ns/copy_set_operations.c

@@ -162,14 +162,14 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tv_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#AEF3F3"
-        android:gravity="center_horizontal"
-        android:padding="2dp"
-        android:textColor="#DA0202" />
+    <!--<TextView-->
+        <!--android:id="@+id/tv_status"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:background="#AEF3F3"-->
+        <!--android:gravity="center_horizontal"-->
+        <!--android:padding="2dp"-->
+        <!--android:textColor="#DA0202" />-->
 
     <TextView
         android:id="@+id/tv_pcm"

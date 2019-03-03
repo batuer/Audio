@@ -1,4 +1,4 @@
-package com.gusi.audio;
+package com.gusi.audio.webrtc;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -7,9 +7,9 @@ import android.media.AudioTrack;
 import android.os.Environment;
 import android.util.Log;
 
+import com.gusi.audio.AudioEffectEntity;
 import com.gusi.audio.utils.CloseUtils;
 import com.gusi.audio.utils.ToastUtils;
-import com.gusi.audio.webrtc.Webrtc;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -25,13 +25,11 @@ import java.util.concurrent.Executors;
 /**
  * @Author ylw  2019/2/19 22:24
  */
-public class Audio2 {
+public class WebrtcAudio {
     private volatile boolean mIsRecording;
     private volatile boolean mIsPlaying;
     private final ExecutorService mService;
-
-    private File mAudioRecordFile;
-    private MainActivity mMainActivity;
+    private volatile File mAudioRecordFile;
 
 
     //录音时采用的采样频率，所以播放时同样的采样频率
@@ -51,14 +49,12 @@ public class Audio2 {
     int mode = AudioTrack.MODE_STREAM;
     int outChannelConfig = AudioFormat.CHANNEL_OUT_MONO;
 
-    public Audio2(MainActivity mainActivity) {
+    public WebrtcAudio() {
         mService = Executors.newSingleThreadExecutor();
-        mMainActivity = mainActivity;
     }
 
 
     public void recordAndPlayShort(final int audioSource, final AudioEffectEntity effectEntity) {
-        mMainActivity.changeStatus("recordAndPlayShort 开始 : ");
         if (mIsRecording || mIsPlaying) {
             ToastUtils.showShort(mIsPlaying + ":Audio正在录音: " + mIsRecording);
             return;
@@ -107,7 +103,7 @@ public class Audio2 {
                     mIsRecording = false;
                     mIsPlaying = false;
                     effectEntity.release();
-                    mMainActivity.changeStatus("recordAndPlayShort 结束");
+                    ToastUtils.showShort("recordAndPlayShort 结束");
                 }
             }
         });
@@ -115,7 +111,7 @@ public class Audio2 {
 
 
     public void recordAndPlayByte(final int audioSource, final AudioEffectEntity effectEntity) {
-        mMainActivity.changeStatus("recordAndPlayByte 开始");
+        ToastUtils.showShort("recordAndPlayByte 开始");
         if (mIsRecording || mIsPlaying) {
             ToastUtils.showShort(mIsPlaying + ":Audio正在录音: " + mIsRecording);
             return;
@@ -164,7 +160,7 @@ public class Audio2 {
                     mIsPlaying = false;
                     mIsRecording = false;
                     effectEntity.release();
-                    mMainActivity.changeStatus("recordAndPlayByte 结束");
+                    ToastUtils.showShort("recordAndPlayByte 结束");
                 }
             }
         });
@@ -172,7 +168,7 @@ public class Audio2 {
 
 
     public void recordByte(final int audioSource, final AudioEffectEntity effectEntity) {
-        mMainActivity.changeStatus("recordByte 开始");
+        ToastUtils.showShort("recordByte 开始");
         if (mIsRecording) {
             ToastUtils.showShort("Audio正在录音: ");
             return;
@@ -222,7 +218,7 @@ public class Audio2 {
                     mIsRecording = false;
                     effectEntity.release();
                     CloseUtils.closeIO(fos);
-                    mMainActivity.changeStatus("recordByte 结束");
+                    ToastUtils.showShort("recordByte 结束");
                 }
             }
         });
@@ -230,7 +226,7 @@ public class Audio2 {
 
 
     public void recordShort(final int audioSource, final AudioEffectEntity effectEntity) {
-        mMainActivity.changeStatus("recordShort 开始 : ");
+        ToastUtils.showShort("recordShort 开始 : ");
         if (mIsRecording) {
             ToastUtils.showShort("Audio正在录音: ");
             return;
@@ -279,7 +275,7 @@ public class Audio2 {
                     mIsRecording = false;
                     CloseUtils.closeIO(dos);
                     effectEntity.release();
-                    mMainActivity.changeStatus("recordShort 结束 : ");
+                    ToastUtils.showShort("recordShort 结束 : ");
                 }
             }
         });
@@ -287,7 +283,7 @@ public class Audio2 {
 
 
     public void stopRecord() {
-        mMainActivity.changeStatus("stopRecord  ");
+        ToastUtils.showShort("stopRecord  ");
         if (!mIsRecording) {
             ToastUtils.showShort("Audio 没有在录音!");
             return;
@@ -296,7 +292,7 @@ public class Audio2 {
     }
 
     public void playByte(final File file, final boolean webrtc) {
-        mMainActivity.changeStatus("playByte  开始");
+        ToastUtils.showShort("playByte  开始");
         if (mIsRecording) {
             ToastUtils.showShort("Audio 正在录音!");
             return;
@@ -336,7 +332,7 @@ public class Audio2 {
 //                            System.arraycopy(buffer, 0, temp, 0, minBufferSize);
 //                            Webrtc.noiseSuppressionByBytes(buffer, sampleRate, 0);
 //                            for (int i = 0; i < minBufferSize; i++) {
-//                                Log.w("Fire", "Audio2:334行:" + temp[i] + ":--:" + buffer[i]);
+//                                Log.w("Fire", "WebrtcAudio:334行:" + temp[i] + ":--:" + buffer[i]);
 //                            }
 //                        }
                         int ret = audioTrack.write(buffer, 0, minBufferSize);
@@ -361,7 +357,7 @@ public class Audio2 {
                     audioTrack.release();
                     //关闭文件输入流
                     CloseUtils.closeIO(is);
-                    mMainActivity.changeStatus("playByte  结束");
+                    ToastUtils.showShort("playByte  结束");
                 }
                 //循环读数据，写到播放器去播放
                 //错误处理，防止闪退
@@ -370,7 +366,7 @@ public class Audio2 {
     }
 
     public void playShort(final File file) {
-        mMainActivity.changeStatus("playShort  开始");
+        ToastUtils.showShort("playShort  开始");
         if (mIsRecording) {
             ToastUtils.showShort("Audio 正在录音!");
             return;
@@ -415,7 +411,7 @@ public class Audio2 {
                     audioTrack.release();
                     //关闭文件输入流
                     CloseUtils.closeIO(dis);
-                    mMainActivity.changeStatus("playShort  结束");
+                    ToastUtils.showShort("playShort  结束");
                 }
                 //循环读数据，写到播放器去播放
                 //错误处理，防止闪退
@@ -425,7 +421,7 @@ public class Audio2 {
 
 
     public void stopPlay() {
-        mMainActivity.changeStatus("stopPlay ");
+        ToastUtils.showShort("stopPlay ");
         if (!mIsPlaying) {
             ToastUtils.showShort("没有在播放!");
         } else {
