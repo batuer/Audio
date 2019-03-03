@@ -10,8 +10,14 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
+//            cmake {
+//                cppFlags ""
+//            }
             cmake {
-                cppFlags ""
+                cppFlags "-std=c++11 -fexceptions -frtti -v"
+                abiFilters 'armeabi'
+//                arguments "-DANDROID_STL=c++_static"
+                arguments "-DANDROID_STL=gnustl_shared"
             }
         }
     }
