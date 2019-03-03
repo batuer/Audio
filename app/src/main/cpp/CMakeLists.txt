@@ -54,6 +54,31 @@ add_library( # Sets the name of the library.
 # default, you only need to specify the name of the public NDK library
 # you want to add. CMake verifies that the library exists before
 # completing its build.
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/speex)
+add_library( # Sets the name of the library.
+        Speex
+
+        # Sets the library as a shared library.
+        SHARED
+
+        #提供的c++文件
+        speex.cpp
+        speex/buffer.c
+        speex/fftwrap.c
+        speex/filterbank.c
+        speex/jitter.c
+        speex/kiss_fft.c
+        speex/kiss_fftr.c
+        speex/mdf.c
+        speex/preprocess.c
+        speex/resample.c
+        speex/scal.c
+        speex/smallft.c
+        speex/testdenoise.c
+        speex/testecho.c
+        speex/testjitter.c
+        speex/testresample.c
+        )
 
 find_library( # Sets the name of the path variable.
         log-lib
@@ -68,6 +93,13 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         Webrtc
+
+        # Links the target library to the log library
+        # included in the NDK.
+        ${log-lib})
+
+target_link_libraries( # Specifies the target library.
+        Speex
 
         # Links the target library to the log library
         # included in the NDK.
